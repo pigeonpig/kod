@@ -1,0 +1,36 @@
+<!DOCTYPE html> 
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0" />
+		<title>在线PS - Photopea在线图片编辑</title>
+		<meta name="thumbnail" content="<?php $this->url('static/photopea/promo/screens/scr5.png');?>" />
+		<link rel="apple-touch-icon" href="<?php $this->url('static/photopea/promo/icon512.png');?>">
+		<link rel="icon" sizes="256x256" href="<?php $this->url('static/photopea/promo/thumb256.png');?>">
+		<link rel="image_src"  type="image/png"  href="<?php $this->url('static/photopea/promo/thumb256.png');?>" />
+		<base href="<?php echo $this->pluginHost.'static/photopea/';?>"/>
+		<?php $this->link('static/photopea/style/all.css');?>
+		<?php $this->link('style/lib/font-icon/style.css','static');?>
+		<?php $this->link('static/app/page.css');?>
+	</head>
+	
+	<body>
+		<script type="text/javascript">var kodSdkConfig = {api:'<?php echo APP_HOST;?>'};</script>
+		<?php $this->link('app/dist/sdk.js','static');?>
+		<script type="text/javascript">
+			var appLang 	  = '<?php echo I18n::getType();?>';
+			var BASE_URL 	  = "<?php echo $this->pluginHost.'static/';?>";
+			var BASE_URL_API  = "<?php echo $this->pluginApi;?>";
+			var FILE_INFO = {
+				fileUrl:	'<?php echo clear_quote($fileUrl);?>',	// 获取url
+				fileName: 	'<?php echo clear_quote($fileName);?>', // 文件名
+				savePath:	'<?php echo clear_quote($savePath);?>', // 文件路径;有则可以直接保存;没有且canWrite则可以另存为;
+				canWrite:	'<?php echo clear_quote($canWrite);?>'	// 是否可写; 可写才能编辑;
+			};
+		</script>
+		<?php $this->link('static/app/page.js');?> 
+		<?php $this->link('static/photopea/code/external/ext.js');?> 
+		<?php $this->link('static/photopea/code/DBS.js');?> 
+		<?php $this->link('static/photopea/code/pp.js');?>
+	</body>
+</html>
