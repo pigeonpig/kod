@@ -1,0 +1,50 @@
+{
+	"id":"dataMigrate",
+	"name":"{{LNG['Migrate.meta.name']}}",
+	"title":"{{LNG['Migrate.meta.title']}}",
+	"version":"1.44",
+	"category":"tools",
+	"source":{
+		"icon":"{{pluginHost}}static/images/icon.png",
+	},
+	"description":"{{LNG['Migrate.meta.desc']}}",
+	"auther":{
+		"copyright":"kodcloud",
+		"homePage":"http://kodcloud.com"
+	},
+	"configItem":{
+        "formStyle":{
+			// "className":"form-box-title-left",
+			"loadFile":"{{pluginHost}}static/config.js",
+		},
+		"pluginSaveKeepOpen":{"className":"hidden","type":"input","value":"1"},
+		"dataPath":{
+			"type":"input",
+			"value":"",
+            "display":"{{LNG['Migrate.config.dataPath']}}",
+            "attr":{"placeholder":"/usr/local/var/www/kodexplorer/data/"},
+            "desc":"待迁移系统数据(data)目录",
+            // "desc":"{{LNG['Migrate.config.dataPathDesc']}}",
+			"require":1
+		},
+        "sep001":{
+            "type":"html",
+            "display":"",
+            "desc":"<div>
+            <p class='mb-10'>说明：</p>
+            <p class='mb-10'>1. 此操作涉及系统数据，请谨慎操作；</p>
+            <p class='mb-10'>2. 数据目录为待迁移KodExplorer系统（v4.40及以下）数据存储目录，默认为项目下data目录，如有修改，则为config/define.php文件中DATA_PATH对应的值；</p>
+            <p class='mb-10'>3. 迁移之前，请根据数据存储目录的大小，预留足够的磁盘空间；</p>
+            <p class='mb-10'>4. 请确保待迁移data目录，及kodbox目录具有可读写权限；</p>
+            <p class='mb-10'>5. 除管理员外，重复的账号、昵称、手机号、邮箱等字段将导致用户迁移失败；</p>
+            <p class='mb-10'>6. 为防止意外，管理员账号密码不会被替换为旧系统密码；</p>
+            <p class='mb-10'>7. 文件过多时，为避免迁移失败，建议选择手动复制或上传。</p>
+            </div>"
+        },
+        "sep002":{
+            "type":"html",
+            "display":"",
+            "desc":"<button class='kui-btn kui-btn-success start-data-migrate'>开始迁移</button>"
+        }
+	}
+}

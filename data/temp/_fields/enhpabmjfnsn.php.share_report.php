@@ -1,0 +1,30 @@
+<?php 
+ return array (
+  0 => 'id',
+  1 => 'shareID',
+  2 => 'title',
+  3 => 'sourceID',
+  4 => 'fileID',
+  5 => 'userID',
+  6 => 'type',
+  7 => 'desc',
+  8 => 'status',
+  9 => 'createTime',
+  10 => 'modifyTime',
+  '_autoinc' => true,
+  '_pk' => 'id',
+  '_type' => 
+  array (
+    'id' => 'integer',
+    'shareID' => 'integer',
+    'title' => 'varchar(255)',
+    'sourceID' => 'integer',
+    'fileID' => 'integer',
+    'userID' => 'integer',
+    'type' => 'smallint',
+    'desc' => 'text',
+    'status' => 'smallint',
+    'createTime' => 'integer',
+    'modifyTime' => 'integer',
+  ),
+);

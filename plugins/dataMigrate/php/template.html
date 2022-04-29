@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<title>数据迁移执行进程</title>
+	<?php $this->link();?>
+
+	<style type="text/css">
+		body{background-color:#f0f2f5;}
+		body a,body a:hover{color: #1890ff;}
+		.body-panel.data-migrate-box{
+			width:70%;margin:5% auto 5% auto;
+			font-size: 13px;color:#666;
+			background:#fff;border-radius:4px;
+			padding-top:50px;
+			box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+		}
+		.body-panel.data-migrate-box .check-title{text-align: center;color:#000;}
+		.body-panel.data-migrate-box .check-title .icon{width:70px;height:70px;line-height:70px;font-size:30px;}
+		.body-panel.data-migrate-box .check-title .title{font-size: 24px;line-height: 32px;margin:15px 0;}
+		.body-panel.data-migrate-box .check-title .desc{color:#aaa;margin:0 0 20px 0;}
+
+		.body-panel.data-migrate-box .check-content{padding:20px 40px;border-radius: 2px;background: #fafafa;}
+		.body-panel.data-migrate-box .check-content .list-title{
+			color:#000;font-size:18px;margin-bottom:30px;
+			border-left: 5px solid #2196F3;padding-left: 15px;
+		}
+		.body-panel.data-migrate-box .check-content .check-content-item{
+            margin-bottom:15px;
+            width: 100%;
+            display: table;
+        }
+        .body-panel.data-migrate-box .check-content .check-content-item>span{
+            display: table-cell;
+        }
+		.body-panel.data-migrate-box .check-content .check-content-item .icon{margin-right:8px;}
+        .body-panel.data-migrate-box .w30 {width: 30%;}
+        .body-panel.data-migrate-box .w60 {width: 60%;}
+        .body-panel.data-migrate-box .w10 {width: 10%;}
+		.body-panel.data-migrate-box .check-content-item .error-info {
+			color: #f5222d;
+			padding-left: 5px;
+			padding: 2px 5px;
+			border-radius: 2px;
+        }
+        .body-panel.data-migrate-box .check-content-item a.action{
+            cursor: pointer;
+            color: #63acff;
+            font-size: 12px;
+            font-style: normal;
+            text-decoration: none;
+        }
+        .body-panel.data-migrate-box .check-content-item a.action:hover{color: #1890ff;}
+        .body-panel.data-migrate-box .icon{
+            display: inline-block;
+            width: 20px;height: 20px;
+            background: rgba(0, 0, 0, 0.02);
+            text-align: center;
+            color: #666;
+            border-radius: 50%;
+            line-height: 20px;
+            font-size: 12px;
+        }
+	</style>
+</head>
+
+
+<body>
+	<div class="body-panel data-migrate-box">
+		<div class="check-title">
+			<div class="icon ri-loader-line"></div> 
+			<div class="title">数据迁移中...</div>
+			<div class="desc">&nbsp;
+                <span class="error-info">执行过程中请勿关闭窗口，否则可能导致迁移失败！</span>
+            </div>
+		</div>
+		<div class="check-content">
+			<h3 class="list-title">执行结果如下:</h3>
+		</div>
+	</div>
+	
+    <script type="text/javascript">
+        var pluginApi = "<?php echo $this->pluginApi;?>";
+        var updateOpt = [];
+        var updateArr = {
+            'role':     '用户角色',
+            'auth':     '文档权限',
+            'group':    '组织架构',
+            'member':   '用户列表',   // （编辑器）配置信息
+            'setting':  '系统配置信息',
+            'groupFile':'部门文档',
+            'userFile': '用户文档',
+            'fav':      '用户收藏',
+            'share':    '用户分享',
+        };
+        // 初始化页面
+		var initUpdateView = function(){
+            // 初始化界面
+            var i = 0;
+            var html = "";
+			for(var type in updateArr){
+                i++;
+				html += '<div class="check-content-item" data-check="'+type+'">\
+					<span class="w30">'+i+'.'+updateArr[type]+'</span>\
+                    <span class="w60 msg"></span>\
+                    <span class="w10"><i>等待更新</i></span>\
+				</div>';
+			}
+            $(html).appendTo('.check-content');
+            // 迁移请求
+            request('update', {}, function(result){
+                if(!result.code) return updateTitle('error', result.data);
+                if(!result.info) return updateProgress();   // 获取进度
+                // 更新界面信息
+                var data = result.info.result || {};
+                updateMigrate(data, true);
+            });
+        }
+
+        // 更新各项信息
+        var updateMigrate = function(data, done = false){
+            if(!data || !Object.keys(data).length) return;
+            var iconList = {'-1':'error', '0':'loading', '1':'success'};
+            _.each(data, function(item, key){
+                var msg = '';
+                if(key == 'setting') {
+                    msg = item.data;
+                }else if(_.includes(['groupFile', 'userFile'], key)) {
+                    msg = '文件大小: ' + pathTools.fileSize(item.sizeSuccess) + '/' + pathTools.fileSize(item.sizeTotal);
+                    msg += '; 文件数: ' + item.cntSuccess + '/' + item.cntTotal;
+                }else{
+                    msg = item.success + '/' + item.total;
+                }
+                var icon = 'icon-' + iconList[item.status];
+                $(".check-content-item[data-check='"+key+"'] .msg").text(msg);
+                $(".check-content-item[data-check='"+key+"'] i").text('').removeClass().addClass('icon ' + icon);
+                if(item.status == '-1') {
+                    $(".check-content-item[data-check='"+key+"'] i").after('<a class="action" href="javascript:void(0);">刷新</a>');
+                    return false;
+                }
+            });
+            var $item = $(".check-content .check-content-item");
+            if($item.find('i.icon-success').length != $item.length) {
+                if(!done) return false;
+                updateTitle('error', '部分数据迁移失败，请重试或手动迁移');
+                return false;
+            }
+            updateTitle('success');
+            return true;
+        }
+
+        // 更新标题信息
+        var updateTitle = function(succ, error = ''){
+            var title = succ == 'success' ? '数据迁移成功!' : '数据迁移失败!';
+            $('.check-title .icon').removeClass().addClass('icon icon-' + succ);
+            $('.check-title .title').html(title);
+            $('.check-title .error-info').html(error);
+            if(succ == 'success') {
+                $('.check-title .error-info').addClass('hidden');
+            }
+        }
+
+        // 递归获取进度
+        var updateProgress = function(type){
+            var progress = function(type){
+                type = type || updateType();
+                if(!type) return false;
+                request('progress', {type: type}, function(result){
+                    if(!result || !result.code || !result.data) return false;
+                    if(result.code == '10001') {
+                        // alert('账号已退出，请重新登录');
+                        updateTitle('error', '账号已退出，请重新登录');
+                        return false;
+                    }
+                    if(!result.data || !Object.keys(result.data).length || result.data[type].status != '-1') {
+                        updateMigrate(result.data);
+                        _.delay(function(){progress();},600);
+                        return false;
+                    }
+                    updateMigrate(result.data, true);
+                });
+            }
+            progress(type);
+        }
+        // 获取待更新项类型
+        var updateType = function(){
+            var type = '';
+            $('.check-content-item[data-check]').each(function(){
+                if(!$(this).find('i.icon-success').length){
+                    type = $(this).attr('data-check');
+                    return false;
+                }
+            });
+            return type;
+        }
+
+        // 请求
+        var request = function(type, data,callback){
+            $.ajax({
+                url:pluginApi + type,
+                type: 'POST',
+                dataType:'json',
+                data: data,
+                success:function(result){
+                    callback(result);
+                },
+                error:function(e){
+                    alert(e.responseText)
+                }
+            });
+        }
+
+		$(document).ready(function(){
+            initUpdateView();
+            // 刷新某项
+            $('.check-content .check-content-item').delegate('a.action','click',function(){
+                var $dom = $(this).parents(".check-content-item");
+                var type = $dom.attr("data-check");
+                request('restart', {type: type}, function(result){
+                    if(!result.code) return alert(result.data);
+                    // 更新消息、图标，进度请求
+                    $dom.find('.msg').text('');
+                    $dom.find('a.action').remove();
+                    $dom.find('i').removeClass().addClass('icon icon-loading');
+                    updateProgress(type);
+                });
+            });
+            // 清空备份结果
+            $('.check-title .error-info').delegate('a.action','click',function(){
+                request('clear', {}, function(result){
+                    if(!result.code) return alert(result.data, false);
+                    parent.$.dialog.list.migrate.close();
+                });
+            });
+        });
+	</script>
+</body>
+</html>
